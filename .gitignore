@@ -1,0 +1,10 @@
+
+/main
+*.exe
+
+vendor/
+
+/pg_data
+/neo4j_data
+
+.env

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db_postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: movie_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  db_neo4j:
+    image: neo4j:5
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - "7474:7474" # Interfejs u pregledaču
+      - "7687:7687" # Port za Go aplikaciju
+    volumes:
+      - neo4j_data:/data
+
+volumes:
+  pg_data:
+  neo4j_data:
