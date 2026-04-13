@@ -30,3 +30,11 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 
 	return &user, nil
 }
+
+func (repo *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
+	var users []models.User
+
+	err := repo.db.WithContext(ctx).Preload("FavouriteGenres").Find(&users).Error
+
+	return users, err
+}

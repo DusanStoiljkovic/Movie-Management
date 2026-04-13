@@ -15,15 +15,21 @@ func main() {
 
 	// Repo
 	movieRepo := repository.NewMovieRepository(db)
+	genreRepo := repository.NewGenreRepository(db)
+	userRepo := repository.NewUserRepository(db)
 
 	// Service
 	movieService := service.NewMovieService(movieRepo)
+	genreService := service.NewGenreService(genreRepo)
+	userService := service.NewUserService(userRepo)
 
 	// Handler
 	movieHandler := handler.NewMovieHandler(movieService)
+	genreHandler := handler.NewGenreHandler(genreService)
+	userHandler := handler.NewUserHandler(userService)
 
 	// Router
-	r := handler.RegisterRoutes(movieHandler)
+	r := handler.RegisterRoutes(movieHandler, genreHandler, userHandler)
 
 	log.Println("Server running on :8080")
 	http.ListenAndServe(":8080", r)
