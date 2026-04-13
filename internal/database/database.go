@@ -1,10 +1,11 @@
-package config
+package database
 
 import (
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -12,6 +13,8 @@ import (
 )
 
 func ConnectDB() *gorm.DB {
+	godotenv.Load()
+
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
 	pass := os.Getenv("DB_PASSWORD")
