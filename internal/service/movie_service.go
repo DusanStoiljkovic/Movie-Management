@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	dto "movie-management/internal/dto/movie"
 	"movie-management/internal/models"
 	"movie-management/internal/repository"
 )
@@ -15,16 +16,30 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	return &MovieService{repo: repo}
 }
 
-func (s *MovieService) CreateMovie(ctx context.Context, movie *models.Movie) error {
-	if movie.Title == "" {
+func (s *MovieService) CreateMovie(ctx context.Context, req *dto.RequestMovie) error {
+	if req.Title == "" {
 		return errors.New("title is required")
 	}
 
-	if movie.Year < 1888 {
+	if req.Year < 1888 {
 		return errors.New("invalid year")
 	}
 
-	return s.repo.CreateMovie(ctx, movie)
+	movie := models.Movie{
+		Title:  req.Title,
+		Year:   req.Year,
+		Rating: req.Rating,
+	}
+
+	if len(req.GenreIDs) > 0 {
+		genres, err := s.repo.GetGenresByIDs(ctx, req.GenreIDs)
+		if err != nil {
+			return err
+		}
+		movie.Genres = genres
+	}
+
+	return s.repo.CreateMovie(ctx, &movie)
 }
 
 func (s *MovieService) GetMovieByID(ctx context.Context, id uint) (*models.Movie, error) {

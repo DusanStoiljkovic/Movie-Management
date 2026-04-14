@@ -15,6 +15,14 @@ func NewMovieRepository(db *gorm.DB) *MovieRepository {
 	return &MovieRepository{db: db}
 }
 
+func (r *MovieRepository) GetGenresByIDs(ctx context.Context, ids []int) ([]models.Genre, error) {
+	var genres []models.Genre
+
+	err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&genres).Error
+
+	return genres, err
+}
+
 func (r *MovieRepository) CreateMovie(ctx context.Context, movie *models.Movie) error {
 	return r.db.WithContext(ctx).Create(movie).Error
 }

@@ -3,7 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"movie-management/internal/models"
+	dto "movie-management/internal/dto/user"
+	"movie-management/internal/mapper"
 	"movie-management/internal/repository"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,26 +18,39 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) Register(ctx context.Context, user *models.User) error {
-	if user.Email == "" || user.Password == "" {
-		return errors.New("email and password required")
+func (s *UserService) Register(ctx context.Context, req *dto.RequestRegisterUser) (*dto.ResponseRegisterUser, error) {
+
+	if req.Email == "" || req.Password == "" {
+		return nil, errors.New("email and password required")
 	}
 
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return errors.New("Problem with hashing")
+		return nil, errors.New("Problem with hashing")
 	}
 
-	user.Password = string(hashPassword)
+	userModel := mapper.ToUserModelFromRegister(req, string(hashPassword))
 
-	return s.repo.CreateUser(ctx, user)
+	if err := s.repo.CreateUser(ctx, userModel); err != nil {
+		return nil, err
+	}
+
+	res := mapper.ToRegisterResponse(userModel)
+
+	return res, nil
 }
 
-func (s *UserService) GetByEmail(ctx context.Context, email string) (*models.User, error) {
-	return s.repo.GetUserByEmail(ctx, email)
+func (s *UserService) GetByEmail(ctx context.Context, email string) (*dto.ResponseLoginUser, error) {
+	response, err := s.repo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	return mapper.ToLoginResponse(response), nil
+
 }
 
-func (s *UserService) Login(ctx context.Context, email, password string) (*models.User, error) {
+func (s *UserService) Login(ctx context.Context, email, password string) (*dto.ResponseLoginUser, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
@@ -47,13 +61,24 @@ func (s *UserService) Login(ctx context.Context, email, password string) (*model
 		return nil, errors.New("invalid credentials")
 	}
 
-	return user, nil
+	return mapper.ToLoginResponse(user), nil
 }
 
-func (s *UserService) GetAllUsers(ctx context.Context, role string) ([]models.User, error) {
+func (s *UserService) GetAllUsers(ctx context.Context, role string) ([]dto.ResponseRegisterUser, error) {
 	if role != "admin" {
 		return nil, errors.New("forbidden")
 	}
 
-	return s.repo.GetAll(ctx)
+	users, err := s.repo.GetAll(ctx)
+	if err != nil {
+		return nil, errors.New("Users not found")
+	}
+
+	response := []dto.ResponseRegisterUser{}
+
+	for _, u := range users {
+		response = append(response, *mapper.ToRegisterResponse(&u))
+	}
+
+	return response, nil
 }

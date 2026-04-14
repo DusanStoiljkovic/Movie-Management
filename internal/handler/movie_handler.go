@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	dto "movie-management/internal/dto/movie"
+	"movie-management/internal/mapper"
 	"movie-management/internal/models"
 	"movie-management/internal/service"
 	"net/http"
@@ -19,19 +21,19 @@ func NewMovieHandler(service *service.MovieService) *MovieHandler {
 }
 
 func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {
-	var movie models.Movie
+	var req dto.RequestMovie
 
-	if err := json.NewDecoder(r.Body).Decode(&movie); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err := h.service.CreateMovie(r.Context(), &movie)
+	err := h.service.CreateMovie(r.Context(), &req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	json.NewEncoder(w).Encode(movie)
+	json.NewEncoder(w).Encode(req)
 }
 
 func (h *MovieHandler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +74,12 @@ func (h *MovieHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(movies)
+	response := []dto.ResponseMovie{}
+
+	for _, m := range movies {
+		response = append(response, *mapper.MapToMovieResponse(&m))
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *MovieHandler) UpdateMovie(w http.ResponseWriter, r *http.Request) {

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"movie-management/internal/models"
+	dto "movie-management/internal/dto/user"
 	"movie-management/internal/service"
 	"net/http"
 )
@@ -16,28 +16,26 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 }
 
 func (handler *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var user models.User
+	var req dto.RequestRegisterUser
 
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err := handler.service.Register(r.Context(), &user)
+	res, err := handler.service.Register(r.Context(), &req)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	user.Password = ""
-	json.NewEncoder(w).Encode(user)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(res)
 }
 
 func (handler *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Email    string
-		Password string
-	}
+	var req dto.RequestLoginUser
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), 400)
