@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Tvoja Go aplikacija
   moviemanagement:
     build:
       context: .
@@ -18,7 +17,6 @@ services:
       - DB_PASSWORD=postgres
       - DB_NAME=movie_management
 
-  # PostgreSQL baza
   db_postgres:
     image: postgres:15-alpine
     environment:
