@@ -5,6 +5,9 @@ import (
 	dto "movie-management/internal/dto/user"
 	"movie-management/internal/service"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type UserHandler struct {
@@ -66,5 +69,22 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) AddFavouriteGenres(w http.ResponseWriter, r *http.Request) {
-	return
+	idParam := chi.URLParam(r, "id")
+	userID, _ := strconv.Atoi(idParam)
+
+	var genreIDs []int
+
+	err := json.NewDecoder(r.Body).Decode(&genreIDs)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	movie, err := h.service.AssignFavGenres(r.Context(), userID, genreIDs)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	json.NewEncoder(w).Encode(movie)
 }

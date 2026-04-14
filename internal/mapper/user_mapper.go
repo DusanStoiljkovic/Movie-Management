@@ -31,6 +31,19 @@ func ToLoginResponse(user *models.User) *dto.ResponseLoginUser {
 	}
 }
 
-func ToUserResponse(req *dto.ResponseLoginUser) *models.User {
-	return &models.User{}
+func ToUserResponse(req *models.User, genres []models.Genre) *dto.UserResponse {
+	var genreNames []string
+
+	for _, genre := range genres {
+		genreNames = append(genreNames, genre.Name)
+	}
+
+	return &dto.UserResponse{
+		ID:              req.ID,
+		Name:            req.Name,
+		Email:           req.Email,
+		Role:            req.Role,
+		FavouriteGenres: genreNames,
+		CreatedAt:       req.CreatedAt,
+	}
 }

@@ -11,11 +11,15 @@ import (
 )
 
 type UserService struct {
-	repo *repository.UserRepository
+	repo      *repository.UserRepository
+	genreRepo *repository.GenreRepository
 }
 
-func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(repo *repository.UserRepository, genreRepo *repository.GenreRepository) *UserService {
+	return &UserService{
+		repo:      repo,
+		genreRepo: genreRepo,
+	}
 }
 
 func (s *UserService) Register(ctx context.Context, req *dto.RequestRegisterUser) (*dto.ResponseRegisterUser, error) {
@@ -81,4 +85,24 @@ func (s *UserService) GetAllUsers(ctx context.Context, role string) ([]dto.Respo
 	}
 
 	return response, nil
+}
+
+func (s *UserService) AssignFavGenres(ctx context.Context, userID int, genreIDs []int) (*dto.UserResponse, error) {
+	genres, err := s.genreRepo.GetGenresByIDs(ctx, genreIDs)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	updatedUser, err := s.repo.AssignGenresToUser(ctx, user, genres)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	return mapper.ToUserResponse(updatedUser, genres), nil
+
 }

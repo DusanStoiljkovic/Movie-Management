@@ -21,7 +21,7 @@ func main() {
 	// Service
 	movieService := service.NewMovieService(movieRepo, genreRepo)
 	genreService := service.NewGenreService(genreRepo)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, genreRepo)
 
 	// Handler
 	movieHandler := handler.NewMovieHandler(movieService)

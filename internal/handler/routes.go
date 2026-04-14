@@ -26,6 +26,7 @@ func RegisterRoutes(MovieHandler *MovieHandler, GenreHandler *GenreHandler, User
 		r.Post("/register", UserHandler.Register)
 		r.Post("/login", UserHandler.Login)
 		r.Get("/users", UserHandler.GetAllUsers)
+		r.Post("/users/{id}", UserHandler.AddFavouriteGenres)
 	})
 
 	return r
