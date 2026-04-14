@@ -19,7 +19,7 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 
 	// Service
-	movieService := service.NewMovieService(movieRepo)
+	movieService := service.NewMovieService(movieRepo, genreRepo)
 	genreService := service.NewGenreService(genreRepo)
 	userService := service.NewUserService(userRepo)
 

@@ -15,7 +15,7 @@ func NewWatchHistoryService(repo *repository.WatchHistoryRepository) *WatchHisto
 	return &WatchHistoryService{repo: repo}
 }
 
-func (s *WatchHistoryService) Add(ctx context.Context, userID, movieID uint) error {
+func (s *WatchHistoryService) Add(ctx context.Context, userID, movieID int) error {
 	wh := &models.WatchHistory{
 		UserID:    userID,
 		MovieID:   movieID,

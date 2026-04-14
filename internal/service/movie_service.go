@@ -4,16 +4,21 @@ import (
 	"context"
 	"errors"
 	dto "movie-management/internal/dto/movie"
+	"movie-management/internal/mapper"
 	"movie-management/internal/models"
 	"movie-management/internal/repository"
 )
 
 type MovieService struct {
-	repo *repository.MovieRepository
+	repo      *repository.MovieRepository
+	genreRepo *repository.GenreRepository
 }
 
-func NewMovieService(repo *repository.MovieRepository) *MovieService {
-	return &MovieService{repo: repo}
+func NewMovieService(repo *repository.MovieRepository, genreRepo *repository.GenreRepository) *MovieService {
+	return &MovieService{
+		repo:      repo,
+		genreRepo: genreRepo,
+	}
 }
 
 func (s *MovieService) CreateMovie(ctx context.Context, req *dto.RequestMovie) error {
@@ -42,7 +47,7 @@ func (s *MovieService) CreateMovie(ctx context.Context, req *dto.RequestMovie) e
 	return s.repo.CreateMovie(ctx, &movie)
 }
 
-func (s *MovieService) GetMovieByID(ctx context.Context, id uint) (*models.Movie, error) {
+func (s *MovieService) GetMovieByID(ctx context.Context, id int) (*models.Movie, error) {
 	return s.repo.GetMovieByID(ctx, id)
 }
 
@@ -74,6 +79,21 @@ func (s *MovieService) DeleteMovie(ctx context.Context, id uint) error {
 	return s.repo.DeleteMovie(ctx, id)
 }
 
-func (s *MovieService) AddGenres(ctx context.Context, movieID uint, genres []models.Genre) error {
-	return s.repo.AddGenresToMovie(ctx, movieID, genres)
+func (s *MovieService) AssignGenresToMovie(ctx context.Context, movieID int, genreIDs []int) (*dto.ResponseMovie, error) {
+
+	genres, err := s.genreRepo.GetGenresByIDs(ctx, genreIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(genres) != len(genreIDs) {
+		return nil, errors.New("some genres were not found")
+	}
+
+	updatedMovie, err := s.repo.AddGenresToMovie(ctx, movieID, genres)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.MapToMovieResponse(updatedMovie), nil
 }

@@ -64,3 +64,7 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(users)
 }
+
+func (h *UserHandler) AddFavouriteGenres(w http.ResponseWriter, r *http.Request) {
+	return
+}

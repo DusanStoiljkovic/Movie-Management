@@ -15,6 +15,7 @@ func RegisterRoutes(MovieHandler *MovieHandler, GenreHandler *GenreHandler, User
 		r.Get("/{id}", MovieHandler.GetMovieByID)
 		r.Put("/{id}", MovieHandler.UpdateMovie)
 		r.Delete("/{id}", MovieHandler.DeleteMovie)
+		r.Post("/{id}", MovieHandler.AddGenresToMovie)
 	})
 
 	r.Route("/genres", func(r chi.Router) {

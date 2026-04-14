@@ -45,7 +45,7 @@ func (h *MovieHandler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, err := h.service.GetMovieByID(r.Context(), uint(id))
+	movie, err := h.service.GetMovieByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -92,7 +92,7 @@ func (h *MovieHandler) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie.ID = uint(id)
+	movie.ID = id
 
 	err := h.service.UpdateMovie(r.Context(), &movie)
 	if err != nil {
@@ -114,4 +114,25 @@ func (h *MovieHandler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *MovieHandler) AddGenresToMovie(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "id")
+	movieID, _ := strconv.Atoi(idParam)
+
+	var genreIDs []int
+
+	err := json.NewDecoder(r.Body).Decode(&genreIDs)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	movie, err := h.service.AssignGenresToMovie(r.Context(), movieID, genreIDs)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	json.NewEncoder(w).Encode(movie)
 }

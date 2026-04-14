@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Movie struct {
-	ID        uint `gorm:"primaryKey"`
+	ID        int `gorm:"primaryKey"`
 	Title     string
 	Year      int
 	Rating    float64

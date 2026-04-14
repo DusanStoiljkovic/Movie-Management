@@ -3,8 +3,8 @@ package models
 import "time"
 
 type WatchHistory struct {
-	ID        uint `gorm:"primaryKey"`
-	UserID    uint
-	MovieID   uint
+	ID        int `gorm:"primaryKey"`
+	UserID    int
+	MovieID   int
 	WatchedAt time.Time
 }

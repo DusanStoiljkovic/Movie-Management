@@ -27,7 +27,7 @@ func (r *MovieRepository) CreateMovie(ctx context.Context, movie *models.Movie) 
 	return r.db.WithContext(ctx).Create(movie).Error
 }
 
-func (r *MovieRepository) GetMovieByID(ctx context.Context, id uint) (*models.Movie, error) {
+func (r *MovieRepository) GetMovieByID(ctx context.Context, id int) (*models.Movie, error) {
 	var movie models.Movie
 
 	err := r.db.WithContext(ctx).
@@ -89,12 +89,17 @@ func (r *MovieRepository) DeleteMovie(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&models.Movie{}, id).Error
 }
 
-func (r *MovieRepository) AddGenresToMovie(ctx context.Context, movieID uint, genres []models.Genre) error {
+func (r *MovieRepository) AddGenresToMovie(ctx context.Context, movieID int, genres []models.Genre) (*models.Movie, error) {
 	var movie models.Movie
 
 	if err := r.db.First(&movie, movieID).Error; err != nil {
-		return err
+		return nil, err
 	}
 
-	return r.db.Model(&movie).Association("Genres").Replace(genres)
+	err := r.db.Model(&movie).Association("Genres").Replace(genres)
+	if err != nil {
+		return nil, err
+	}
+
+	return &movie, nil
 }
