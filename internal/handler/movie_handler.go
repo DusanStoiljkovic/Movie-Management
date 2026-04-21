@@ -17,7 +17,9 @@ type MovieHandler struct {
 }
 
 func NewMovieHandler(service *service.MovieService) *MovieHandler {
-	return &MovieHandler{service: service}
+	return &MovieHandler{
+		service: service,
+	}
 }
 
 func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {

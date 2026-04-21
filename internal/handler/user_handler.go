@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	dto "movie-management/internal/dto/user"
+	"movie-management/internal/models"
 	"movie-management/internal/service"
 	"net/http"
 	"strconv"
@@ -11,11 +12,15 @@ import (
 )
 
 type UserHandler struct {
-	service *service.UserService
+	service   *service.UserService
+	whService *service.WatchHistoryService
 }
 
-func NewUserHandler(service *service.UserService) *UserHandler {
-	return &UserHandler{service: service}
+func NewUserHandler(service *service.UserService, whService *service.WatchHistoryService) *UserHandler {
+	return &UserHandler{
+		service:   service,
+		whService: whService,
+	}
 }
 
 func (handler *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -87,4 +92,21 @@ func (h *UserHandler) AddFavouriteGenres(w http.ResponseWriter, r *http.Request)
 	}
 
 	json.NewEncoder(w).Encode(movie)
+}
+
+func (h *UserHandler) WatchMovie(w http.ResponseWriter, r *http.Request) {
+	var req models.WatchHistory
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	wh, err := h.whService.Add(r.Context(), req.UserID, req.MovieID)
+	if err != nil {
+		http.Error(w, "greska pri upisu u bazu", 500)
+	}
+
+	json.NewEncoder(w).Encode(wh)
 }
