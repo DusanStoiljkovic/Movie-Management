@@ -10,5 +10,5 @@ type User struct {
 	Role      string
 	CreatedAt time.Time
 
-	FavouriteGenres []Genre `gorm:"many2many:user_favourite_genres;"`
+	FavouriteGenres []Genre `gorm:"many2many:user_favourite_genres;constraint:OnDelete:CASCADE;"`
 }

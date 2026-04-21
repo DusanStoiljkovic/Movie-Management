@@ -15,33 +15,6 @@ func NewMovieRepository(db *gorm.DB) *MovieRepository {
 	return &MovieRepository{db: db}
 }
 
-func (r *MovieRepository) GetGenresByIDs(ctx context.Context, ids []int) ([]models.Genre, error) {
-	var genres []models.Genre
-
-	err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&genres).Error
-
-	return genres, err
-}
-
-func (r *MovieRepository) CreateMovie(ctx context.Context, movie *models.Movie) error {
-	return r.db.WithContext(ctx).Create(movie).Error
-}
-
-func (r *MovieRepository) GetMovieByID(ctx context.Context, id int) (*models.Movie, error) {
-	var movie models.Movie
-
-	err := r.db.WithContext(ctx).
-		Preload("Genres").
-		First(&movie, id).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &movie, nil
-
-}
-
 func (r *MovieRepository) GetMovies(
 	ctx context.Context,
 	limit, offset int,
@@ -66,7 +39,7 @@ func (r *MovieRepository) GetMovies(
 	}
 
 	if minRating != 0 {
-		query = query.Where("raing >= ?", minRating)
+		query = query.Where("rating >= ?", minRating)
 	}
 
 	if sort != "" {
@@ -81,25 +54,77 @@ func (r *MovieRepository) GetMovies(
 	return movies, err
 }
 
-func (r *MovieRepository) UpdateMovie(ctx context.Context, movie *models.Movie) error {
-	return r.db.WithContext(ctx).Save(movie).Error
-}
-
-func (r *MovieRepository) DeleteMovie(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Delete(&models.Movie{}, id).Error
-}
-
-func (r *MovieRepository) AddGenresToMovie(ctx context.Context, movieID int, genres []models.Genre) (*models.Movie, error) {
+func (r *MovieRepository) GetMovieByID(ctx context.Context, id int) (*models.Movie, error) {
 	var movie models.Movie
 
-	if err := r.db.First(&movie, movieID).Error; err != nil {
-		return nil, err
-	}
+	err := r.db.WithContext(ctx).
+		Preload("Genres").
+		First(&movie, id).Error
 
-	err := r.db.Model(&movie).Association("Genres").Replace(genres)
 	if err != nil {
 		return nil, err
 	}
 
 	return &movie, nil
+}
+
+func (r *MovieRepository) GetGenresByIDs(ctx context.Context, ids []int) ([]models.Genre, error) {
+	var genres []models.Genre
+
+	err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&genres).Error
+
+	return genres, err
+}
+
+func (r *MovieRepository) CreateMovie(ctx context.Context, movie *models.Movie) error {
+	return r.db.WithContext(ctx).Create(movie).Error
+}
+
+func (r *MovieRepository) AddGenresToMovie(ctx context.Context, movieID int, genres []models.Genre) (*models.Movie, error) {
+	movie, err := r.GetMovieByID(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.db.Model(&movie).Association("Genres").Replace(genres)
+	if err != nil {
+		return nil, err
+	}
+
+	return movie, nil
+}
+
+func (r *MovieRepository) UpdateMovie(ctx context.Context, movie *models.Movie) error {
+	return r.db.WithContext(ctx).Save(movie).Error
+}
+
+func (r *MovieRepository) DeleteMovie(ctx context.Context, movieID int) error {
+	err := r.DeleteMoviesGenres(ctx, movieID)
+	if err != nil {
+		return err
+	}
+	return r.db.WithContext(ctx).Delete(&models.Movie{}, movieID).Error
+}
+
+func (r *MovieRepository) DeleteSpecificMoviesGenre(ctx context.Context, movieID, genreID int) error {
+	movie, err := r.GetMovieByID(ctx, movieID)
+	if err != nil {
+		return err
+	}
+
+	genre, err := r.GetGenresByIDs(ctx, []int{genreID})
+	if err != nil {
+		return err
+	}
+
+	return r.db.Model(&movie).Association("Genres").Delete(&genre)
+}
+
+func (r *MovieRepository) DeleteMoviesGenres(ctx context.Context, movieID int) error {
+	movie, err := r.GetMovieByID(ctx, movieID)
+	if err != nil {
+		return err
+	}
+
+	return r.db.Model(&movie).Association("Genres").Clear()
 }

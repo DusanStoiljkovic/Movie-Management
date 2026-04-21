@@ -75,7 +75,7 @@ func (s *MovieService) UpdateMovie(ctx context.Context, movie *models.Movie) err
 	return s.repo.UpdateMovie(ctx, movie)
 }
 
-func (s *MovieService) DeleteMovie(ctx context.Context, id uint) error {
+func (s *MovieService) DeleteMovie(ctx context.Context, id int) error {
 	return s.repo.DeleteMovie(ctx, id)
 }
 
@@ -96,4 +96,8 @@ func (s *MovieService) AssignGenresToMovie(ctx context.Context, movieID int, gen
 	}
 
 	return mapper.MapToMovieResponse(updatedMovie), nil
+}
+
+func (s *MovieService) DeleteSpecificMoviesGenre(ctx context.Context, movieID, genreID int) error {
+	return s.repo.DeleteSpecificMoviesGenre(ctx, movieID, genreID)
 }

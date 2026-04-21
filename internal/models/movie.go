@@ -9,5 +9,5 @@ type Movie struct {
 	Rating    float64
 	CreatedAt time.Time
 
-	Genres []Genre `gorm:"many2many:movie_genres;"`
+	Genres []Genre `gorm:"many2many:movie_genres;constraint:OnDelete:CASCADE;"`
 }

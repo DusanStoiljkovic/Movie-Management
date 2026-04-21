@@ -15,6 +15,16 @@ func NewGenreRepository(db *gorm.DB) *GenreRepository {
 	return &GenreRepository{db: db}
 }
 
+func (repo *GenreRepository) GetAll(ctx context.Context) ([]models.Genre, error) {
+	var genres []models.Genre
+
+	err := repo.db.WithContext(ctx).Find(&genres).Error
+	if err != nil {
+		return nil, err
+	}
+	return genres, nil
+}
+
 func (repo *GenreRepository) AddGenre(ctx context.Context, genre *models.Genre) error {
 	return repo.db.WithContext(ctx).Create(genre).Error
 }
@@ -28,4 +38,9 @@ func (repo *GenreRepository) GetGenresByIDs(ctx context.Context, genreIDs []int)
 	}
 
 	return genres, nil
+}
+
+func (repo GenreRepository) DeleteGenreByID(genreIDs []int) error {
+	repo.db.Model("")
+	return repo.db.Delete(&models.Genre{}, genreIDs).Error
 }

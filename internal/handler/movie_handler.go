@@ -107,7 +107,7 @@ func (h *MovieHandler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "id")
 	id, _ := strconv.Atoi(idParam)
 
-	err := h.service.DeleteMovie(r.Context(), uint(id))
+	err := h.service.DeleteMovie(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -135,4 +135,22 @@ func (h *MovieHandler) AddGenresToMovie(w http.ResponseWriter, r *http.Request) 
 	}
 
 	json.NewEncoder(w).Encode(movie)
+}
+
+func (h *MovieHandler) DeleteSpecificMoviesGenre(w http.ResponseWriter, r *http.Request) {
+	idParam1 := chi.URLParam(r, "movieID")
+	idParam2 := chi.URLParam(r, "genreID")
+	movieID, _ := strconv.Atoi(idParam1)
+	genreID, _ := strconv.Atoi(idParam2)
+
+	err := h.service.DeleteSpecificMoviesGenre(r.Context(), movieID, genreID)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	movie, err := h.service.GetMovieByID(r.Context(), movieID)
+
+	json.NewEncoder(w).Encode(movie)
+
 }
